@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class DataProvider {
+public class DataProviderOrganisation {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @JsonIgnore
     private Long id;
     @Column(nullable = false, unique = true)

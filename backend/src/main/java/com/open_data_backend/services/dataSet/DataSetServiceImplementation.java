@@ -2,7 +2,7 @@ package com.open_data_backend.services.dataSet;
 
 import com.open_data_backend.entities.DataSet;
 import com.open_data_backend.entities.DataSetTheme;
-import com.open_data_backend.entities.DataProvider;
+import com.open_data_backend.entities.DataProviderOrganisation;
 import com.open_data_backend.repositories.DataProviderRepository;
 import com.open_data_backend.repositories.DataSetRepository;
 import com.open_data_backend.repositories.DataSetThemeRepository;
@@ -74,7 +74,7 @@ public class DataSetServiceImplementation implements DataSetService {
     public DataSet saveDataSet(String name, String description, UUID themeUuid, UUID providerUuid, MultipartFile file) throws IOException {
         validateDataSetInput(name, description, themeUuid, providerUuid, file);
         DataSetTheme theme = checkIfThemeExists(themeUuid);
-        DataProvider provider = checkIfProviderExists(providerUuid);
+        DataProviderOrganisation provider = checkIfProviderExists(providerUuid);
         checkUniqueDataSetName(name);
         ensureUploadDirectoryExists();
         DataSet dataSet = createDataSet(name, description, theme, provider, file);
@@ -151,8 +151,8 @@ public class DataSetServiceImplementation implements DataSetService {
         }
         return theme;
     }
-    private DataProvider checkIfProviderExists(UUID providerUuid) {
-        DataProvider provider = providerRepository.findByUuidAndDeletedFalse(providerUuid);
+    private DataProviderOrganisation checkIfProviderExists(UUID providerUuid) {
+        DataProviderOrganisation provider = providerRepository.findByUuidAndDeletedFalse(providerUuid);
         if (provider == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le provider spécifié n'existe pas ou a été supprimé.");
         }
@@ -169,7 +169,7 @@ public class DataSetServiceImplementation implements DataSetService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un DataSet avec le nom '" + name + "' existe déjà.");
         }
     }
-    private DataSet createDataSet(String name, String description, DataSetTheme theme, DataProvider provider, MultipartFile file) throws IOException {
+    private DataSet createDataSet(String name, String description, DataSetTheme theme, DataProviderOrganisation provider, MultipartFile file) throws IOException {
         DataSet dataSet = new DataSet();
         dataSet.setUuid(UUID.randomUUID());
         dataSet.setName(name);

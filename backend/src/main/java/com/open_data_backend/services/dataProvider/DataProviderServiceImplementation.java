@@ -1,6 +1,6 @@
 package com.open_data_backend.services.dataProvider;
 
-import com.open_data_backend.entities.DataProvider;
+import com.open_data_backend.entities.DataProviderOrganisation;
 import com.open_data_backend.repositories.DataProviderRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
@@ -24,24 +24,24 @@ public class DataProviderServiceImplementation implements DataProviderService {
     private static final String imageUrl = "http://localhost:8080/api/providers/upload/image";
 
     @Override
-    public List<DataProvider> getAllProviders() {
-        List<DataProvider> providers = providerRepository.findByDeletedFalse();
+    public List<DataProviderOrganisation> getAllProviders() {
+        List<DataProviderOrganisation> providers = providerRepository.findByDeletedFalse();
         if (providers.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The provider list is empty");
         }
         return providers;
     }
     @Override
-    public DataProvider getProviderById(UUID uuid) {
-        DataProvider provider= providerRepository.findByUuidAndDeletedFalse(uuid);
+    public DataProviderOrganisation getProviderById(UUID uuid) {
+        DataProviderOrganisation provider= providerRepository.findByUuidAndDeletedFalse(uuid);
         if (provider == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No provider found with id: "+uuid);
         }
         return provider;
     }
     @Override
-    public DataProvider getProviderByName(String name) {
-        DataProvider provider=providerRepository.findByNameAndDeletedFalse(name);
+    public DataProviderOrganisation getProviderByName(String name) {
+        DataProviderOrganisation provider=providerRepository.findByNameAndDeletedFalse(name);
         if (provider == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No provider found with name: "+name);
         }
@@ -49,7 +49,7 @@ public class DataProviderServiceImplementation implements DataProviderService {
     }
     @Override
     public Boolean deleteProviderById(UUID uuid) {
-        DataProvider provider= getProviderById(uuid);
+        DataProviderOrganisation provider= getProviderById(uuid);
         if (provider != null) {
             provider.setDeleted(true);
             providerRepository.save(provider);
@@ -69,8 +69,8 @@ public class DataProviderServiceImplementation implements DataProviderService {
     }
 
     @Override
-    public DataProvider updateProviderById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
-        DataProvider existingProvider = getProviderById(uuid);
+    public DataProviderOrganisation updateProviderById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
+        DataProviderOrganisation existingProvider = getProviderById(uuid);
         if (name != null) {
             existingProvider.setName(name);
         }
@@ -86,11 +86,11 @@ public class DataProviderServiceImplementation implements DataProviderService {
         return providerRepository.save(existingProvider);
     }
     @Override
-    public DataProvider saveProvider(String name, String description, MultipartFile file) throws IOException {
+    public DataProviderOrganisation saveProvider(String name, String description, MultipartFile file) throws IOException {
         validateProviderInputs(name, description, file);
         checkIfProviderNameExists(name);
         ensureUploadDirectoryExists();
-        DataProvider provider = createProviderObject(name, description, file);
+        DataProviderOrganisation provider = createProviderObject(name, description, file);
         return providerRepository.save(provider);
     }
 
@@ -121,8 +121,8 @@ public class DataProviderServiceImplementation implements DataProviderService {
             Files.createDirectories(uploadPath);
         }
     }
-    private DataProvider createProviderObject(String name, String description, MultipartFile file) throws IOException {
-        DataProvider provider = new DataProvider();
+    private DataProviderOrganisation createProviderObject(String name, String description, MultipartFile file) throws IOException {
+        DataProviderOrganisation provider = new DataProviderOrganisation();
         provider.setUuid(UUID.randomUUID());
         provider.setName(name.trim());
         provider.setDescription(description.trim());

@@ -37,5 +37,5 @@ public class DataSet {
     @ManyToOne @JoinColumn(name = "theme_id") @JsonIgnoreProperties({"id", "name", "description", "createdBy", "updatedBy", "createdOn", "updatedOn", "deleted", "iconPath", "datasets","base64Icon", "icon"})
     private DataSetTheme theme;
     @ManyToOne @JoinColumn(name = "provider_id") @JsonIgnoreProperties({"id", "name", "description", "createdBy", "updatedBy", "createdOn", "updatedOn", "deleted", "dataSetList", "iconPath","base64Icon", "icon"})
-    private DataProvider provider;
+    private DataProviderOrganisation provider;
 }

@@ -1,6 +1,6 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataProvider;
+import com.open_data_backend.entities.DataProviderOrganisation;
 import com.open_data_backend.services.dataProvider.DataProviderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,36 +16,36 @@ public class DataProviderController {
     private final DataProviderService providerService;
 
     @GetMapping("/get/all")
-    public List<DataProvider> getAllProviders() {
+    public List<DataProviderOrganisation> getAllProviders() {
         return providerService.getAllProviders();
     }
 
     @GetMapping("/get/byId/{uuid}")
-    public DataProvider getProviderById(@PathVariable UUID uuid) {
+    public DataProviderOrganisation getProviderById(@PathVariable UUID uuid) {
         return providerService.getProviderById(uuid);
     }
 
     @GetMapping("/get/byName/{name}")
-    public DataProvider getProviderByName(@PathVariable String name) {
+    public DataProviderOrganisation getProviderByName(@PathVariable String name) {
         return providerService.getProviderByName(name);
     }
 
     @PutMapping(value = "/update/byId/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<DataProvider> updateProviderById(
+    public ResponseEntity<DataProviderOrganisation> updateProviderById(
             @PathVariable UUID id,
             @RequestParam(value = "name",required = false) String name,
             @RequestParam(value = "description",required = false) String description,
             @RequestParam(value = "icon",required = false) MultipartFile icon) throws IOException {
-        DataProvider updatedProvider= providerService.updateProviderById(id, name, description, icon);
+        DataProviderOrganisation updatedProvider= providerService.updateProviderById(id, name, description, icon);
         return ResponseEntity.ok(updatedProvider);
     }
 
     @PostMapping("/save")
-    public ResponseEntity<DataProvider> saveProvider(
+    public ResponseEntity<DataProviderOrganisation> saveProvider(
             @RequestParam(value = "name") String name,
             @RequestParam("description") String description,
             @RequestParam(value = "icon") MultipartFile file) throws IOException {
-        DataProvider savedProvider = providerService.saveProvider(name,description,file);
+        DataProviderOrganisation savedProvider = providerService.saveProvider(name,description,file);
         return ResponseEntity.ok(savedProvider);
     }
 
