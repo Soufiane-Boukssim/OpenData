@@ -3,9 +3,9 @@ package com.open_data_backend.services.dataSet;
 import com.open_data_backend.entities.DataSet;
 import com.open_data_backend.entities.DataSetTheme;
 import com.open_data_backend.entities.DataProvider;
+import com.open_data_backend.repositories.DataProviderRepository;
 import com.open_data_backend.repositories.DataSetRepository;
 import com.open_data_backend.repositories.DataSetThemeRepository;
-import com.open_data_backend.repositories.ProviderRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service @RequiredArgsConstructor
 public class DataSetServiceImplementation implements DataSetService {
     private final DataSetRepository dataSetRepository;
-    private final ProviderRepository providerRepository;
+    private final DataProviderRepository providerRepository;
     private final DataSetThemeRepository dataSetThemeRepository;
     private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/documents/datasets/";
     private static final String fileUrl = "http://localhost:8080/api/datasets/upload/file/";

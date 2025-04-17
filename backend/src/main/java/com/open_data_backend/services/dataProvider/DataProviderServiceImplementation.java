@@ -1,7 +1,7 @@
 package com.open_data_backend.services.dataProvider;
 
 import com.open_data_backend.entities.DataProvider;
-import com.open_data_backend.repositories.ProviderRepository;
+import com.open_data_backend.repositories.DataProviderRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Service @RequiredArgsConstructor
-public class ProviderServiceImplementation implements ProviderService {
-    private final ProviderRepository providerRepository;
+public class DataProviderServiceImplementation implements DataProviderService {
+    private final DataProviderRepository providerRepository;
     private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/providers";
     private static final String imageUrl = "http://localhost:8080/api/providers/upload/image";
 

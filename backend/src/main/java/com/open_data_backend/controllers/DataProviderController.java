@@ -1,7 +1,7 @@
 package com.open_data_backend.controllers;
 
 import com.open_data_backend.entities.DataProvider;
-import com.open_data_backend.services.dataProvider.ProviderService;
+import com.open_data_backend.services.dataProvider.DataProviderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController @RequiredArgsConstructor @RequestMapping("/api/providers")
-public class ProviderController {
-    private final ProviderService providerService;
+public class DataProviderController {
+    private final DataProviderService providerService;
 
     @GetMapping("/get/all")
     public List<DataProvider> getAllProviders() {

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service @RequiredArgsConstructor
-public class DataConsumerImplementation implements DataConsumerService {
+public class DataConsumerServiceImplementation implements DataConsumerService {
     private final DataConsumerRepository DataConsumerRepository;
 
     @Override

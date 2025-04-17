@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-public interface ProviderService {
+public interface DataProviderService {
     List<DataProvider> getAllProviders();
     DataProvider getProviderById(UUID uuid);
     DataProvider getProviderByName(String name);

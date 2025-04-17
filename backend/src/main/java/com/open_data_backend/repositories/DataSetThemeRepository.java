@@ -9,8 +9,8 @@ import java.util.UUID;
 @Repository
 public interface DataSetThemeRepository extends JpaRepository<DataSetTheme, Long> {
     DataSetTheme findByNameAndDeletedFalse(String name);
-    DataSetTheme findByUuidAndDeletedFalse(UUID uuid); // Rechercher par UUID et isDeleted = false
+    DataSetTheme findByUuidAndDeletedFalse(UUID uuid);
     long countByDeletedFalse();
-    List<DataSetTheme> findByDeletedFalse(); // Récupérer les thèmes non supprimés
+    List<DataSetTheme> findByDeletedFalse();
 
 }

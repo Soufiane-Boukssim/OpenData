@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ProviderRepository extends JpaRepository<DataProvider, Long> {
+public interface DataProviderRepository extends JpaRepository<DataProvider, Long> {
     List<DataProvider> findByDeletedFalse();
     DataProvider findByUuidAndDeletedFalse(UUID uuid);
     DataProvider findByNameAndDeletedFalse(String name);
