@@ -1,7 +1,9 @@
-package com.open_data_backend.services.dataProvider;
+package com.open_data_backend.services.dataProviderOrganisation;
 
 import com.open_data_backend.entities.DataProviderOrganisation;
-import com.open_data_backend.repositories.DataProviderRepository;
+import com.open_data_backend.entities.DataProviderOrganisationMember;
+import com.open_data_backend.repositories.DataProviderOrganisationMemberRepository;
+import com.open_data_backend.repositories.DataProviderOrganisationRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
@@ -18,59 +20,75 @@ import java.util.List;
 import java.util.UUID;
 
 @Service @RequiredArgsConstructor
-public class DataProviderServiceImplementation implements DataProviderService {
-    private final DataProviderRepository providerRepository;
-    private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/providers";
-    private static final String imageUrl = "http://localhost:8080/api/providers/upload/image";
+public class DataProviderOrganisationServiceImplementation implements DataProviderOrganisationService {
+
+    private final DataProviderOrganisationRepository dataProviderOrganisationRepository;
+    private final DataProviderOrganisationMemberRepository dataProviderOrganisationMemberRepository;
+
+    private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/data-provider/organisations";
+    private static final String imageUrl = "http://localhost:8080/api/data-provider/organisations/upload/image";
 
     @Override
-    public List<DataProviderOrganisation> getAllProviders() {
-        List<DataProviderOrganisation> providers = providerRepository.findByDeletedFalse();
+    public List<DataProviderOrganisation> getAllDataProviderOrganisations() {
+        List<DataProviderOrganisation> providers = dataProviderOrganisationRepository.findByDeletedFalse();
         if (providers.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The provider list is empty");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The data provider organisation table is empty");
         }
         return providers;
     }
     @Override
-    public DataProviderOrganisation getProviderById(UUID uuid) {
-        DataProviderOrganisation provider= providerRepository.findByUuidAndDeletedFalse(uuid);
+    public DataProviderOrganisation getDataProviderOrganisationById(UUID uuid) {
+        DataProviderOrganisation provider= dataProviderOrganisationRepository.findByUuidAndDeletedFalse(uuid);
         if (provider == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No provider found with id: "+uuid);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider organisation found with id: "+uuid);
         }
         return provider;
     }
     @Override
-    public DataProviderOrganisation getProviderByName(String name) {
-        DataProviderOrganisation provider=providerRepository.findByNameAndDeletedFalse(name);
+    public DataProviderOrganisation getDataProviderOrganisationByName(String name) {
+        DataProviderOrganisation provider=dataProviderOrganisationRepository.findByNameAndDeletedFalse(name);
         if (provider == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No provider found with name: "+name);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider organisation found with name: "+name);
         }
         return provider;
     }
     @Override
-    public Boolean deleteProviderById(UUID uuid) {
-        DataProviderOrganisation provider= getProviderById(uuid);
+    public Boolean deleteDataProviderOrganisationById(UUID uuid) {
+        DataProviderOrganisation provider= getDataProviderOrganisationById(uuid);
         if (provider != null) {
             provider.setDeleted(true);
-            providerRepository.save(provider);
+            dataProviderOrganisationRepository.save(provider);
             return true;
         }
         return false;
     }
     @Override
-    public Long getNumberOfProvider() {
-        return providerRepository.countByDeletedFalse();
+    public Long getNumberOfDataProviderOrganisations() {
+        return dataProviderOrganisationRepository.countByDeletedFalse();
     }
 
     @Override
-    public byte[] getImage(String fileName) throws IOException {
-        Path filePath = Paths.get(UPLOAD_DIR+'/'+ fileName);
+//    public byte[] getDataProviderOrganisationImage(String fileName) throws IOException {
+//        Path filePath = Paths.get(UPLOAD_DIR+'/'+ fileName);
+//        return Files.readAllBytes(filePath);
+//    }
+
+    public byte[] getDataProviderOrganisationImage(String fileName) throws IOException {
+        Path filePath = Paths.get(UPLOAD_DIR + '/' + fileName);
+
+        if (!Files.exists(filePath)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Image "+fileName+" not found in the storage"
+            );
+        }
+
         return Files.readAllBytes(filePath);
     }
 
     @Override
-    public DataProviderOrganisation updateProviderById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
-        DataProviderOrganisation existingProvider = getProviderById(uuid);
+    public DataProviderOrganisation updateDataProviderOrganisationById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
+        DataProviderOrganisation existingProvider = getDataProviderOrganisationById(uuid);
         if (name != null) {
             existingProvider.setName(name);
         }
@@ -83,15 +101,44 @@ public class DataProviderServiceImplementation implements DataProviderService {
             existingProvider.setIconPath(UPLOAD_DIR+'/'+uniqueFileName);
             existingProvider.setIcon(imageUrl+'/'+uniqueFileName);
         }
-        return providerRepository.save(existingProvider);
+        return dataProviderOrganisationRepository.save(existingProvider);
     }
+
     @Override
-    public DataProviderOrganisation saveProvider(String name, String description, MultipartFile file) throws IOException {
+    public DataProviderOrganisation saveDataProviderOrganisation(String name, String description, MultipartFile file) throws IOException {
         validateProviderInputs(name, description, file);
         checkIfProviderNameExists(name);
         ensureUploadDirectoryExists();
         DataProviderOrganisation provider = createProviderObject(name, description, file);
-        return providerRepository.save(provider);
+        return dataProviderOrganisationRepository.save(provider);
+    }
+
+
+    @Override
+    public void assignUserToOrganisation(UUID organisationId, UUID userId) {
+        List<String> errors = new ArrayList<>();
+
+        DataProviderOrganisation dataProviderOrganisation = dataProviderOrganisationRepository.findByUuidAndDeletedFalse(organisationId);
+        if (dataProviderOrganisation == null) {
+            errors.add("Organisation not found with id: "+organisationId);
+        }
+
+        DataProviderOrganisationMember dataProviderOrganisationMember = dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(userId);
+        if (dataProviderOrganisationMember == null) {
+            errors.add("Member not found with the id: "+userId);
+        }
+
+        if (dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(userId).getDataProviderOrganisation()!=null ){
+            errors.add("Member with id: "+userId+" already assign to an organisation");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Erreur(s): " + String.join(", ", errors) );
+        }
+
+       dataProviderOrganisationMember.setDataProviderOrganisation(dataProviderOrganisation);
+
+        dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
     }
 
 
@@ -111,7 +158,7 @@ public class DataProviderServiceImplementation implements DataProviderService {
         }
     }
     private void checkIfProviderNameExists(String name) {
-        if (providerRepository.findByNameAndDeletedFalse(name) != null) {
+        if (dataProviderOrganisationRepository.findByNameAndDeletedFalse(name) != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un provider avec ce nom existe déjà.");
         }
     }

@@ -3,7 +3,7 @@ package com.open_data_backend.services.dataSet;
 import com.open_data_backend.entities.DataSet;
 import com.open_data_backend.entities.DataSetTheme;
 import com.open_data_backend.entities.DataProviderOrganisation;
-import com.open_data_backend.repositories.DataProviderRepository;
+import com.open_data_backend.repositories.DataProviderOrganisationRepository;
 import com.open_data_backend.repositories.DataSetRepository;
 import com.open_data_backend.repositories.DataSetThemeRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service @RequiredArgsConstructor
 public class DataSetServiceImplementation implements DataSetService {
     private final DataSetRepository dataSetRepository;
-    private final DataProviderRepository providerRepository;
+    private final DataProviderOrganisationRepository dataProviderOrganisationRepository;
     private final DataSetThemeRepository dataSetThemeRepository;
     private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/documents/datasets/";
     private static final String fileUrl = "http://localhost:8080/api/datasets/upload/file/";
@@ -48,7 +48,7 @@ public class DataSetServiceImplementation implements DataSetService {
     }
     @Override
     public List<DataSet> getAllDataSetByProvider(String provider) {
-        List<DataSet> dataSetList= dataSetRepository.findByProvider_NameAndDeletedFalse(provider);
+        List<DataSet> dataSetList= dataSetRepository.findByDataProviderOrganisation_NameAndDeletedFalse(provider);
         if (dataSetList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with provider " + provider);
         }
@@ -94,7 +94,7 @@ public class DataSetServiceImplementation implements DataSetService {
             existingDataSet.setTheme(dataSetThemeRepository.findByUuidAndDeletedFalse(themeUuid));
         }
         if (description != null) {
-            existingDataSet.setProvider(providerRepository.findByUuidAndDeletedFalse(providerUuid));
+            existingDataSet.setDataProviderOrganisation(dataProviderOrganisationRepository.findByUuidAndDeletedFalse(providerUuid));
         }
         if (file != null && !file.isEmpty()) {
             String uniqueFileName = saveFileToDisk(file);
@@ -152,7 +152,7 @@ public class DataSetServiceImplementation implements DataSetService {
         return theme;
     }
     private DataProviderOrganisation checkIfProviderExists(UUID providerUuid) {
-        DataProviderOrganisation provider = providerRepository.findByUuidAndDeletedFalse(providerUuid);
+        DataProviderOrganisation provider = dataProviderOrganisationRepository.findByUuidAndDeletedFalse(providerUuid);
         if (provider == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le provider spécifié n'existe pas ou a été supprimé.");
         }
@@ -175,7 +175,7 @@ public class DataSetServiceImplementation implements DataSetService {
         dataSet.setName(name);
         dataSet.setDescription(description);
         dataSet.setTheme(theme);
-        dataSet.setProvider(provider);
+        dataSet.setDataProviderOrganisation(provider);
         if (file != null && !file.isEmpty()) {
             String uniqueFileName = saveFileToDisk(file);
             dataSet.setFileData(file.getBytes());

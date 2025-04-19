@@ -13,7 +13,8 @@ public interface DataSetRepository extends JpaRepository<DataSet, Long> {
     //findByTheme_Name → Filtre sur la table DataSetTheme (theme.name = ?)
     //AndDeletedFalse → Filtre sur la table DataSet (dataset.deleted = false)
 
-    List<DataSet> findByProvider_NameAndDeletedFalse(String provider);
+    //List<DataSet> findByProvider_NameAndDeletedFalse(String provider);
+    List<DataSet> findByDataProviderOrganisation_NameAndDeletedFalse(String provider);
     DataSet findByUuidAndDeletedFalse(UUID uuid);
     DataSet findByNameAndDeletedFalse(String name);
     long countByDeletedFalse();

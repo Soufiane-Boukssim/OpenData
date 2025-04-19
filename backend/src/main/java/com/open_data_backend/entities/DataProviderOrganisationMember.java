@@ -1,22 +1,23 @@
 package com.open_data_backend.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class DataProviderOrganisation {
+public class DataProviderOrganisationMember {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @JsonIgnore
     private Long id;
     @Column(nullable = false, unique = true)
     private UUID uuid;
-    private String name;
-    private String description;
+    private String firstName;
+    private String lastName;
+    private String email;
     private String createdBy;
     private String updatedBy;
     @CreationTimestamp
@@ -28,19 +29,11 @@ public class DataProviderOrganisation {
     }
     @Column(nullable = false) @JsonIgnore
     private boolean deleted = false;
-//    @OneToMany @JsonIgnore
-//    private List<DataSet> dataSetList;
 
-    @OneToMany(mappedBy = "dataProviderOrganisation") @JsonIgnore
-//    @OneToMany(mappedBy = "dataProviderOrganisation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DataProviderOrganisationMember> dataProviderOrganisationMembers = new ArrayList<>();
+    @ManyToOne @JoinColumn(name = "data_provider_organisation_id") @JsonIgnoreProperties({"description","createdBy","updatedBy", "createdOn","updatedOn", "deleted","dataSets", "iconData","iconPath", "icon"})
+    private DataProviderOrganisation dataProviderOrganisation;
 
-    // Liste des datasets publiés par cette organisation
-    @OneToMany(mappedBy = "dataProviderOrganisation")
-    private List<DataSet> dataSets;
+    @OneToMany(mappedBy = "createdBy") @JsonIgnore
+    private List<DataSet> dataSetsCreated;
 
-    @Lob @Column(columnDefinition = "LONGBLOB")
-    private byte[] iconData;
-    private String iconPath;
-    private String icon;
 }
