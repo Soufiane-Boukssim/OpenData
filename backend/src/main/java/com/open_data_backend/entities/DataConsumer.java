@@ -13,7 +13,7 @@ public class DataConsumer {
     private UUID uuid;
     private String name;
     private String email;
-    @Column(nullable = false)
+    @Column(nullable = false) @JsonIgnore
     private boolean deleted = false;
     //se connecter pour laisser des commentaire
 }

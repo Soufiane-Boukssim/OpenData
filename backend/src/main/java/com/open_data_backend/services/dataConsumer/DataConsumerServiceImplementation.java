@@ -6,21 +6,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service @RequiredArgsConstructor
 public class DataConsumerServiceImplementation implements DataConsumerService {
-    private final DataConsumerRepository DataConsumerRepository;
+    private final DataConsumerRepository dataConsumerRepository;
 
     @Override
     public List<DataConsumer> getAllDataConsumers() {
-        return DataConsumerRepository.findByDeletedFalse();
+        return dataConsumerRepository.findByDeletedFalse();
     }
 
     @Override
     public DataConsumer getDataConsumerById(UUID id) {
-        DataConsumer dataConsumer = DataConsumerRepository.findByUuidAndDeletedFalse(id);
+        DataConsumer dataConsumer = dataConsumerRepository.findByUuidAndDeletedFalse(id);
         if (dataConsumer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"DataConsumer not found with id: " + id);
         }
@@ -29,7 +30,7 @@ public class DataConsumerServiceImplementation implements DataConsumerService {
 
     @Override
     public DataConsumer getDataConsumerByName(String name) {
-        DataConsumer dataConsumer = DataConsumerRepository.findByNameAndDeletedFalse(name);
+        DataConsumer dataConsumer = dataConsumerRepository.findByNameAndDeletedFalse(name);
         if (dataConsumer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"DataConsumer not found with name: " + name);
         }
@@ -38,7 +39,7 @@ public class DataConsumerServiceImplementation implements DataConsumerService {
 
     @Override
     public DataConsumer getDataConsumerByEmail(String email) {
-        DataConsumer dataConsumer = DataConsumerRepository.findByEmailAndDeletedFalse(email);
+        DataConsumer dataConsumer = dataConsumerRepository.findByEmailAndDeletedFalse(email);
         if (dataConsumer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"DataConsumer not found with email: " + email);
         }
@@ -50,7 +51,7 @@ public class DataConsumerServiceImplementation implements DataConsumerService {
         DataConsumer dataConsumer = getDataConsumerById(id);
         if (dataConsumer != null) {
             dataConsumer.setDeleted(true);
-            DataConsumerRepository.save(dataConsumer);
+            dataConsumerRepository.save(dataConsumer);
             return true;
         }
         return false;
@@ -59,32 +60,35 @@ public class DataConsumerServiceImplementation implements DataConsumerService {
     @Override
     public DataConsumer updateDataConsumerById(UUID id, String name,String email) {
         DataConsumer dataConsumer= getDataConsumerById(id);
-        checkExistanceOfConsumer(name,email);
+        checkExistanceOfConsumer2(name,email);
         dataConsumer.setName(name);
         dataConsumer.setEmail(email);
-        return DataConsumerRepository.save(dataConsumer);
+        return dataConsumerRepository.save(dataConsumer);
     }
 
     @Override
     public DataConsumer addDataConsumer(String name,String email) {
-        checkExistanceOfConsumer(name,email);
+        checkExistanceOfConsumer2(name,email);
         DataConsumer dataConsumer=new DataConsumer();
         dataConsumer.setUuid(UUID.randomUUID());
         dataConsumer.setName(name);
         dataConsumer.setEmail(email);
-        return DataConsumerRepository.save(dataConsumer);
+        return dataConsumerRepository.save(dataConsumer);
     }
 
+    void checkExistanceOfConsumer2(String name, String email) {
+        List<String> errors = new ArrayList<>();
 
-    void checkExistanceOfConsumer(String name,String email) {
-        DataConsumer existingDataConsumerName = getDataConsumerByName(name);
-        if (existingDataConsumerName!=null) {
-            throw new ResponseStatusException(HttpStatus.IM_USED,"This name is already in use");
+        if (dataConsumerRepository.existsByNameAndDeletedFalse(name)) {
+            errors.add("DataConsumer with name: " + name + " already exists");
         }
 
-        DataConsumer existingDataConsumerEmail = getDataConsumerByEmail(email);
-        if (existingDataConsumerEmail!=null) {
-            throw new ResponseStatusException(HttpStatus.IM_USED,"This email is already in use");
+        if (dataConsumerRepository.existsByEmailAndDeletedFalse(email)) {
+            errors.add("DataConsumer with email: " + email + " already exists");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.IM_USED,"There are errors: " + String.join(", ", errors));
         }
     }
 

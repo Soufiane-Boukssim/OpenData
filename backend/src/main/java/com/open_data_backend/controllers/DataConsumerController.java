@@ -40,7 +40,7 @@ public class DataConsumerController {
 
     @PostMapping("/save")
     public ResponseEntity<DataConsumer> saveDataConsumer(
-            @RequestParam(value = "name") String name,
+            @RequestParam("name") String name,
             @RequestParam("email") String email) throws IOException {
         DataConsumer dataConsumer = dataConsumerService.addDataConsumer(name,email);
         return ResponseEntity.ok(dataConsumer);

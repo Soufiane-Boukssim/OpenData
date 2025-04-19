@@ -11,4 +11,7 @@ public interface DataConsumerRepository extends JpaRepository<DataConsumer, Inte
     DataConsumer findByNameAndDeletedFalse(String name);
     DataConsumer findByEmailAndDeletedFalse(String email);
 
+    boolean existsByNameAndDeletedFalse(String name);
+    boolean existsByEmailAndDeletedFalse(String email);
+
 }
