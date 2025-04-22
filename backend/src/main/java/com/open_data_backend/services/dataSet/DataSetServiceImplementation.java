@@ -1,8 +1,10 @@
 package com.open_data_backend.services.dataSet;
 
+import com.open_data_backend.dtos.dataSet.DataSetResponse;
 import com.open_data_backend.entities.DataSet;
 import com.open_data_backend.entities.DataSetTheme;
 import com.open_data_backend.entities.DataProviderOrganisation;
+import com.open_data_backend.mappers.DataSetMapper;
 import com.open_data_backend.repositories.DataProviderOrganisationRepository;
 import com.open_data_backend.repositories.DataSetRepository;
 import com.open_data_backend.repositories.DataSetThemeRepository;
@@ -24,66 +26,91 @@ import java.util.UUID;
 
 @Service @RequiredArgsConstructor
 public class DataSetServiceImplementation implements DataSetService {
+
     private final DataSetRepository dataSetRepository;
     private final DataProviderOrganisationRepository dataProviderOrganisationRepository;
     private final DataSetThemeRepository dataSetThemeRepository;
+
+    private final DataSetMapper dataSetMapper;
+
     private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/documents/datasets/";
     private static final String fileUrl = "http://localhost:8080/api/datasets/upload/file/";
 
     @Override
-    public List<DataSet> getAllDataSet() {
+    public List<DataSetResponse> getAllDataSet() {
+        List<DataSetResponse> dataSetResponseList = new ArrayList<>();
         List<DataSet> dataSetList = dataSetRepository.findByDeletedFalse();
         if (dataSetList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Is Empty");
         }
-        return dataSetList;
+        for (DataSet dataSet : dataSetList) {
+            dataSetResponseList.add(dataSetMapper.convertToResponse(dataSet));
+        }
+        return dataSetResponseList;
     }
+
     @Override
-    public List<DataSet> getAllDataSetByTheme(String themeName) {
+    public List<DataSetResponse> getAllDataSetByTheme(String themeName) {
+        List<DataSetResponse> dataSetResponseList = new ArrayList<>();
         List<DataSet> dataSets = dataSetRepository.findByTheme_NameAndDeletedFalse(themeName);
         if (dataSets.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with theme " + themeName);
         }
-        return dataSets;
+        for (DataSet dataSet : dataSets) {
+            dataSetResponseList.add(dataSetMapper.convertToResponse(dataSet));
+        }
+        return dataSetResponseList;
     }
+
     @Override
-    public List<DataSet> getAllDataSetByProvider(String provider) {
-        List<DataSet> dataSetList= dataSetRepository.findByDataProviderOrganisation_NameAndDeletedFalse(provider);
+    public List<DataSetResponse> getAllDataSetByProvider(String provider) {
+        List<DataSetResponse> dataSetResponseList = new ArrayList<>();
+        List<DataSet> dataSetList = dataSetRepository.findByDataProviderOrganisation_NameAndDeletedFalse(provider);
         if (dataSetList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with provider " + provider);
         }
-        return dataSetList;
+        for (DataSet dataSet : dataSetList) {
+            dataSetResponseList.add(dataSetMapper.convertToResponse(dataSet));
+        }
+        return dataSetResponseList;
     }
+
     @Override
-    public DataSet getDataSetById(UUID uuid) {
+    public DataSetResponse getDataSetById(UUID uuid) {
         DataSet dataSet= dataSetRepository.findByUuidAndDeletedFalse(uuid);
         if (dataSet == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with uuid " + uuid);
         }
-        return dataSet;
+        return dataSetMapper.convertToResponse(dataSet);
     }
+
     @Override
-    public DataSet getDataSetByName(String name) {
+    public DataSetResponse getDataSetByName(String name) {
         DataSet dataSet= dataSetRepository.findByNameAndDeletedFalse(name);
         if (dataSet == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with name " + name);
         }
-        return dataSet;
-    }
-    @Override
-    public DataSet saveDataSet(String name, String description, UUID themeUuid, UUID providerUuid, MultipartFile file) throws IOException {
-        validateDataSetInput(name, description, themeUuid, providerUuid, file);
-        DataSetTheme theme = checkIfThemeExists(themeUuid);
-        DataProviderOrganisation provider = checkIfProviderExists(providerUuid);
-        checkUniqueDataSetName(name);
-        ensureUploadDirectoryExists();
-        DataSet dataSet = createDataSet(name, description, theme, provider, file);
-        return dataSetRepository.save(dataSet);
+        return dataSetMapper.convertToResponse(dataSet);
     }
 
     @Override
-    public DataSet updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID providerUuid, MultipartFile file) throws IOException {
-        DataSet existingDataSet = getDataSetById(uuid);
+    public DataSetResponse saveDataSet(String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException {
+        validateDataSetInput(name, description, themeUuid, dataProviderOrganisationUuid, file);
+        DataSetTheme theme = checkIfThemeExists(themeUuid);
+        DataProviderOrganisation provider = checkIfProviderExists(dataProviderOrganisationUuid);
+        checkUniqueDataSetName(name);
+        ensureUploadDirectoryExists();
+        DataSet dataSet = createDataSet(name, description, theme, provider, file);
+        dataSet= dataSetRepository.save(dataSet);
+        return dataSetMapper.convertToResponse(dataSet);
+    }
+
+    @Override
+    public DataSetResponse updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException {
+        DataSet existingDataSet= dataSetRepository.findByUuidAndDeletedFalse(uuid);
+        if (existingDataSet == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with uuid " + uuid);
+        }
         if (name != null) {
             existingDataSet.setName(name);
         }
@@ -94,7 +121,7 @@ public class DataSetServiceImplementation implements DataSetService {
             existingDataSet.setTheme(dataSetThemeRepository.findByUuidAndDeletedFalse(themeUuid));
         }
         if (description != null) {
-            existingDataSet.setDataProviderOrganisation(dataProviderOrganisationRepository.findByUuidAndDeletedFalse(providerUuid));
+            existingDataSet.setDataProviderOrganisation(dataProviderOrganisationRepository.findByUuidAndDeletedFalse(dataProviderOrganisationUuid));
         }
         if (file != null && !file.isEmpty()) {
             String uniqueFileName = saveFileToDisk(file);
@@ -104,18 +131,19 @@ public class DataSetServiceImplementation implements DataSetService {
             existingDataSet.setFileType(file.getContentType());
             existingDataSet.setFileSize(file.getSize());
         }
-        return dataSetRepository.save(existingDataSet);
+        existingDataSet= dataSetRepository.save(existingDataSet);
+        return dataSetMapper.convertToResponse(existingDataSet);
     }
 
     @Override
     public Boolean deleteDataSetById(UUID uuid) {
-        DataSet dataSet= getDataSetById(uuid);
-        if (dataSet != null) {
-            dataSet.setDeleted(true);
-            dataSetRepository.save(dataSet);
-            return true;
+        DataSet existingDataSet= dataSetRepository.findByUuidAndDeletedFalse(uuid);
+        if (existingDataSet == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with uuid " + uuid);
         }
-        return false;
+        existingDataSet.setDeleted(true);
+        dataSetRepository.save(existingDataSet);
+        return true;
     }
 
     @Override
@@ -132,7 +160,6 @@ public class DataSetServiceImplementation implements DataSetService {
         return Files.readAllBytes(filePath);
     }
 
-
     private void validateDataSetInput(String name, String description, UUID themeUuid, UUID providerUuid, MultipartFile file) {
         List<String> errors = new ArrayList<>();
         if (name == null || name.trim().isEmpty()) errors.add("Le champ 'name' est vide");
@@ -144,6 +171,7 @@ public class DataSetServiceImplementation implements DataSetService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erreur(s): " + String.join(", ", errors) + ".");
         }
     }
+
     private DataSetTheme checkIfThemeExists(UUID themeUuid) {
         DataSetTheme theme = dataSetThemeRepository.findByUuidAndDeletedFalse(themeUuid);
         if (theme == null) {
@@ -151,6 +179,7 @@ public class DataSetServiceImplementation implements DataSetService {
         }
         return theme;
     }
+
     private DataProviderOrganisation checkIfProviderExists(UUID providerUuid) {
         DataProviderOrganisation provider = dataProviderOrganisationRepository.findByUuidAndDeletedFalse(providerUuid);
         if (provider == null) {
@@ -158,17 +187,20 @@ public class DataSetServiceImplementation implements DataSetService {
         }
         return provider;
     }
+
     private void ensureUploadDirectoryExists() throws IOException {
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
     }
+
     private void checkUniqueDataSetName(String name) {
         if (dataSetRepository.findByNameAndDeletedFalse(name) != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un DataSet avec le nom '" + name + "' existe déjà.");
         }
     }
+
     private DataSet createDataSet(String name, String description, DataSetTheme theme, DataProviderOrganisation provider, MultipartFile file) throws IOException {
         DataSet dataSet = new DataSet();
         dataSet.setUuid(UUID.randomUUID());
@@ -187,6 +219,7 @@ public class DataSetServiceImplementation implements DataSetService {
         }
         return dataSet;
     }
+
     private String saveFileToDisk(MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
         if (originalFileName == null || originalFileName.trim().isEmpty()) {
@@ -214,6 +247,5 @@ public class DataSetServiceImplementation implements DataSetService {
 
         return filePath.getFileName().toString();
     }
-
 
 }

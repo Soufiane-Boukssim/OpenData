@@ -1,7 +1,7 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataProviderOrganisationMember;
-import com.open_data_backend.services.dataProviderMember.DataProviderOrganisationMemberService;
+import com.open_data_backend.dtos.dataProviderOrganisationMember.DataProviderOrganisationMemberResponse;
+import com.open_data_backend.services.dataProviderOrganisationMember.DataProviderOrganisationMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,33 +14,33 @@ public class DataProviderOrganisationMemberController {
     private final DataProviderOrganisationMemberService dataProviderOrganisationMemberService;
 
     @GetMapping("/get/all")
-    public List<DataProviderOrganisationMember> getAllDataProviderOrganisationMembers() {
+    public List<DataProviderOrganisationMemberResponse> getAllDataProviderOrganisationMembers() {
         return dataProviderOrganisationMemberService.getAllDataProviderMembers();
     }
 
     @GetMapping("/get/byId/{uuid}")
-    public DataProviderOrganisationMember getDataProviderOrganisationMemberById(@PathVariable UUID uuid) {
+    public DataProviderOrganisationMemberResponse getDataProviderOrganisationMemberById(@PathVariable UUID uuid) {
         return dataProviderOrganisationMemberService.getDataProviderMemberById(uuid);
     }
 
     @GetMapping("/get/byName")
-    public DataProviderOrganisationMember getDataProviderOrganisationMemberByName(@RequestParam String firstname, @RequestParam String lastname) {
+    public DataProviderOrganisationMemberResponse getDataProviderOrganisationMemberByName(@RequestParam String firstname, @RequestParam String lastname) {
         return dataProviderOrganisationMemberService.getDataProviderMemberByName(firstname, lastname);
     }
 
     @GetMapping("/get/byEmail")
-    public DataProviderOrganisationMember getDataProviderOrganisationMemberByEmail(@RequestParam String email) {
+    public DataProviderOrganisationMemberResponse getDataProviderOrganisationMemberByEmail(@RequestParam String email) {
         return dataProviderOrganisationMemberService.getDataProviderMemberByEmail(email);
     }
 
 
     @PostMapping("/save")
-    public ResponseEntity<DataProviderOrganisationMember> saveDataProviderOrganisationMember(
+    public ResponseEntity<DataProviderOrganisationMemberResponse> saveDataProviderOrganisationMember(
             @RequestParam(value = "firstname") String firstname,
             @RequestParam("lastname") String lastname,
             @RequestParam("email") String email) {
-        DataProviderOrganisationMember dataProviderOrganisationMember = dataProviderOrganisationMemberService.saveDataProviderMember(firstname, lastname,email);
-        return ResponseEntity.ok(dataProviderOrganisationMember);
+        DataProviderOrganisationMemberResponse dataProviderOrganisationMemberResponse = dataProviderOrganisationMemberService.saveDataProviderMember(firstname, lastname,email);
+        return ResponseEntity.ok(dataProviderOrganisationMemberResponse);
     }
 
     @DeleteMapping("/delete/byId/{uuid}")
@@ -49,13 +49,13 @@ public class DataProviderOrganisationMemberController {
     }
 
     @PutMapping("/update/byId/{uuid}")
-    public ResponseEntity<DataProviderOrganisationMember> updateDataProviderOrganisationMember(
+    public ResponseEntity<DataProviderOrganisationMemberResponse> updateDataProviderOrganisationMember(
             @PathVariable UUID uuid,
             @RequestParam("firstname") String firstname,
             @RequestParam("lastname") String lastname,
             @RequestParam("email") String email) {
-        DataProviderOrganisationMember dataProviderOrganisationMember = dataProviderOrganisationMemberService.updateDataProviderMember(uuid, firstname, lastname, email);
-        return ResponseEntity.ok(dataProviderOrganisationMember);
+        DataProviderOrganisationMemberResponse dataProviderOrganisationMemberResponse = dataProviderOrganisationMemberService.updateDataProviderMember(uuid, firstname, lastname, email);
+        return ResponseEntity.ok(dataProviderOrganisationMemberResponse);
     }
 
 

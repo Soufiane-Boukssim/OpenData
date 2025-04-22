@@ -1,6 +1,6 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataSet;
+import com.open_data_backend.dtos.dataSet.DataSetResponse;
 import com.open_data_backend.services.dataSet.DataSetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -17,51 +17,51 @@ public class DataSetController {
     private final DataSetService dataSetService;
 
     @GetMapping("/get/all")
-    public List<DataSet> getAllDataSets() {
+    public List<DataSetResponse> getAllDataSets() {
         return dataSetService.getAllDataSet();
     }
 
     @GetMapping("/get/allByTheme/{themeName}")
-    public List<DataSet> getAllDataSetsByTheme(@PathVariable String themeName) {
+    public List<DataSetResponse> getAllDataSetsByTheme(@PathVariable String themeName) {
         return dataSetService.getAllDataSetByTheme(themeName);
     }
 
     @GetMapping("/get/allByProvider/{provider}")
-    public List<DataSet> getAllDataSetByProvider(@PathVariable String provider) {
+    public List<DataSetResponse> getAllDataSetByProvider(@PathVariable String provider) {
         return dataSetService.getAllDataSetByProvider(provider);
     }
 
     @GetMapping("/get/byId/{uuid}")
-    public DataSet getDataSetById(@PathVariable UUID uuid) {
+    public DataSetResponse getDataSetById(@PathVariable UUID uuid) {
         return dataSetService.getDataSetById(uuid);
     }
 
     @GetMapping("/get/byName/{name}")
-    public DataSet getDataSetByName(@PathVariable String name) {
+    public DataSetResponse getDataSetByName(@PathVariable String name) {
         return dataSetService.getDataSetByName(name);
     }
 
 
     @PostMapping("/save")
-    public ResponseEntity<DataSet> saveDataSet( //tous les champs sont required = false mais dans service je lai retourner obligatoire
+    public ResponseEntity<DataSetResponse> saveDataSet( //tous les champs sont required = false mais dans service je lai retourner obligatoire
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
             @RequestParam(required = false) UUID themeUuid,
-            @RequestParam(required = false) UUID providerUuid,
+            @RequestParam(required = false) UUID dataProviderOrganisationUuid,
             @RequestParam(required = false) MultipartFile file) throws IOException{
-        DataSet dataSet = dataSetService.saveDataSet(name, description, themeUuid, providerUuid, file);
-        return ResponseEntity.ok(dataSet);
+        DataSetResponse dataSetResponse = dataSetService.saveDataSet(name, description, themeUuid, dataProviderOrganisationUuid, file);
+        return ResponseEntity.ok(dataSetResponse);
     }
 
     @PutMapping(value = "/update/byId/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<DataSet> updateDataSet(
+    public ResponseEntity<DataSetResponse> updateDataSet(
             @PathVariable UUID id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "themeUuid", required = false) UUID themeUuid,
-            @RequestParam(value = "providerUuid", required = false) UUID providerUuid,
+            @RequestParam(value = "dataProviderOrganisationUuid", required = false) UUID dataProviderOrganisationUuid,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        DataSet updatedDataSet = dataSetService.updateDataSetById(id, name, description, themeUuid, providerUuid, file);
+        DataSetResponse updatedDataSet = dataSetService.updateDataSetById(id, name, description, themeUuid, dataProviderOrganisationUuid, file);
         return ResponseEntity.ok(updatedDataSet);
     }
 

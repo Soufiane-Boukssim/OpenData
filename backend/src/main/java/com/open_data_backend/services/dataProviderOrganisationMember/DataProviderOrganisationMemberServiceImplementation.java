@@ -1,12 +1,13 @@
-package com.open_data_backend.services.dataProviderMember;
+package com.open_data_backend.services.dataProviderOrganisationMember;
 
+import com.open_data_backend.dtos.dataProviderOrganisationMember.DataProviderOrganisationMemberResponse;
 import com.open_data_backend.entities.DataProviderOrganisationMember;
+import com.open_data_backend.mappers.DataProviderOrganisationMemberMapper;
 import com.open_data_backend.repositories.DataProviderOrganisationMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,52 +17,59 @@ public class DataProviderOrganisationMemberServiceImplementation implements Data
 
     private final DataProviderOrganisationMemberRepository dataProviderOrganisationMemberRepository;
 
+    private final DataProviderOrganisationMemberMapper dataProviderOrganisationMemberMapper;
+
     @Override
-    public List<DataProviderOrganisationMember> getAllDataProviderMembers() {
-        List<DataProviderOrganisationMember> dataProviderUsers = dataProviderOrganisationMemberRepository.findByDeletedFalse();
-        if (dataProviderUsers.isEmpty()) {
+    public List<DataProviderOrganisationMemberResponse> getAllDataProviderMembers() {
+        List<DataProviderOrganisationMemberResponse> dataProviderOrganisationMemberResponses = new ArrayList<>();
+        List<DataProviderOrganisationMember> dataProviderOrganisationMembers = dataProviderOrganisationMemberRepository.findByDeletedFalse();
+        if (dataProviderOrganisationMembers.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The data provider members table is empty");
         }
-        return dataProviderUsers;
+        for (DataProviderOrganisationMember member : dataProviderOrganisationMembers) {
+            dataProviderOrganisationMemberResponses.add(dataProviderOrganisationMemberMapper.convertToResponse(member));
+        }
+        return dataProviderOrganisationMemberResponses;
     }
 
     @Override
-    public DataProviderOrganisationMember getDataProviderMemberById(UUID uuid) {
+    public DataProviderOrganisationMemberResponse getDataProviderMemberById(UUID uuid) {
         DataProviderOrganisationMember dataProviderOrganisationMember = findDataProviderMemberById(uuid);
         if ( dataProviderOrganisationMember == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider member found with id: "+uuid);
         }
-        return dataProviderOrganisationMember;
+        return dataProviderOrganisationMemberMapper.convertToResponse(dataProviderOrganisationMember);
 
     }
 
 
     @Override
-    public DataProviderOrganisationMember getDataProviderMemberByName(String firstname,String lastname) {
-        DataProviderOrganisationMember dataProviderUser= dataProviderOrganisationMemberRepository.findByFirstNameAndLastNameAndDeletedFalse(firstname,lastname);
-        if (dataProviderUser == null) {
+    public DataProviderOrganisationMemberResponse getDataProviderMemberByName(String firstname,String lastname) {
+        DataProviderOrganisationMember dataProviderOrganisationMember= dataProviderOrganisationMemberRepository.findByFirstNameAndLastNameAndDeletedFalse(firstname,lastname);
+        if (dataProviderOrganisationMember == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider member found with name: "+firstname+" "+lastname);
         }
-        return dataProviderUser;
+        return dataProviderOrganisationMemberMapper.convertToResponse(dataProviderOrganisationMember);
 
     }
 
     @Override
-    public DataProviderOrganisationMember getDataProviderMemberByEmail(String email) {
-        DataProviderOrganisationMember dataProviderUser= dataProviderOrganisationMemberRepository.findByEmailAndDeletedFalse(email);
-        if (dataProviderUser == null) {
+    public DataProviderOrganisationMemberResponse getDataProviderMemberByEmail(String email) {
+        DataProviderOrganisationMember dataProviderOrganisationMember= dataProviderOrganisationMemberRepository.findByEmailAndDeletedFalse(email);
+        if (dataProviderOrganisationMember == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider member found with email: "+email);
         }
-        return dataProviderUser;
+        return dataProviderOrganisationMemberMapper.convertToResponse(dataProviderOrganisationMember);
     }
 
     @Override
-    public DataProviderOrganisationMember saveDataProviderMember(String firstName, String lastName, String email) {
+    public DataProviderOrganisationMemberResponse saveDataProviderMember(String firstName, String lastName, String email) {
         validateProviderMemberInputs(firstName, lastName, email);
         validateEmailSyntax(email);
         checkIfProviderExists(firstName, lastName, email);
         DataProviderOrganisationMember dataProviderOrganisationMember = createDataProviderOrganisationMemberObject(firstName, lastName, email);
-        return dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
+        dataProviderOrganisationMember= dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
+        return dataProviderOrganisationMemberMapper.convertToResponse(dataProviderOrganisationMember);
 
     }
 
@@ -77,7 +85,7 @@ public class DataProviderOrganisationMemberServiceImplementation implements Data
     }
 
     @Override
-    public DataProviderOrganisationMember updateDataProviderMember(UUID uuid, String firstName, String lastName, String email) {
+    public DataProviderOrganisationMemberResponse updateDataProviderMember(UUID uuid, String firstName, String lastName, String email) {
         validateProviderMemberInputs(firstName, lastName, email);
         validateEmailSyntax(email);
         checkIfProviderExists(firstName, lastName, email);
@@ -86,7 +94,8 @@ public class DataProviderOrganisationMemberServiceImplementation implements Data
             dataProviderOrganisationMember.setFirstName(firstName);
             dataProviderOrganisationMember.setLastName(lastName);
             dataProviderOrganisationMember.setEmail(email);
-            return dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
+            dataProviderOrganisationMember= dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
+            return dataProviderOrganisationMemberMapper.convertToResponse(dataProviderOrganisationMember);
         }
         else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No data provider member found with id: "+uuid);

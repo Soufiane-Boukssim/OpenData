@@ -1,6 +1,8 @@
 package com.open_data_backend.services.dataSetTheme;
 
+import com.open_data_backend.dtos.dataSetTheme.DataSetThemeResponse;
 import com.open_data_backend.entities.DataSetTheme;
+import com.open_data_backend.mappers.DataSetThemeMapper;
 import com.open_data_backend.repositories.DataSetThemeRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
@@ -19,73 +21,95 @@ import java.util.UUID;
 
 @Service @RequiredArgsConstructor
 public class DataSetThemeServiceImplementation implements DataSetThemeService {
+
     private final DataSetThemeRepository dataSetThemeRepository;
-    private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/themes";
+    private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/dataset-theme";
     private static final String imageUrl = "http://localhost:8080/api/themes/upload/image";
+    private final DataSetThemeMapper dataSetThemeMapper;
 
     @Override
-    public List<DataSetTheme> getAllThemes() {
+    public List<DataSetThemeResponse> getAllThemes() {
+        List<DataSetThemeResponse> themesResponse = new ArrayList<>();
         List<DataSetTheme> themes = dataSetThemeRepository.findByDeletedFalse();
         if (themes.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"There are no themes in the database");
         }
-        return themes;
+        else {
+            for (DataSetTheme theme : themes) {
+                themesResponse.add(dataSetThemeMapper.convertToResponse(theme));
+            }
+        }
+        return themesResponse;
     }
+
     @Override
-    public DataSetTheme getThemeById(UUID uuid) {
+    public DataSetThemeResponse getThemeById(UUID uuid) {
         DataSetTheme dataSetTheme= dataSetThemeRepository.findByUuidAndDeletedFalse(uuid);
         if (dataSetTheme == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No theme found with id: "+uuid);
         }
-        return dataSetTheme;
+        return dataSetThemeMapper.convertToResponse(dataSetTheme);
     }
+
     @Override
-    public DataSetTheme getThemeByName(String name) {
+    public DataSetThemeResponse getThemeByName(String name) {
         DataSetTheme dataSetTheme= dataSetThemeRepository.findByNameAndDeletedFalse(name);
         if (dataSetTheme == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No theme found with name: "+name);
         }
-        return dataSetTheme;
+        return dataSetThemeMapper.convertToResponse(dataSetTheme);
     }
+
     @Override
-    public DataSetTheme saveTheme(String name, String description, MultipartFile file) throws IOException {
+    public DataSetThemeResponse saveTheme(String name, String description, MultipartFile file) throws IOException {
         validateThemeInputs(name, description, file);
         checkIfThemeNameExists(name);
         ensureUploadDirectoryExists();
         DataSetTheme theme = createThemeObject(name, description, file);
-        return dataSetThemeRepository.save(theme);
+        theme= dataSetThemeRepository.save(theme);
+        return dataSetThemeMapper.convertToResponse(theme);
     }
+
     @Override
-    public DataSetTheme updateThemeById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
-        DataSetTheme existingTheme = getThemeById(uuid);
+    public DataSetThemeResponse updateThemeById(UUID uuid, String name, String description, MultipartFile icon) throws IOException {
+        DataSetTheme dataSetTheme= dataSetThemeRepository.findByUuidAndDeletedFalse(uuid);
+        if (dataSetTheme == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No theme found with id: "+uuid);
+        }
         if (name != null) {
-            existingTheme.setName(name);
+            dataSetTheme.setName(name);
         }
         if (description != null) {
-            existingTheme.setDescription(description);
+            dataSetTheme.setDescription(description);
         }
         if (icon != null && !icon.isEmpty()) {
             String uniqueFileName = saveFileToDisk(icon);
-            existingTheme.setIconData(icon.getBytes());
-            existingTheme.setIconPath(UPLOAD_DIR+'/'+uniqueFileName);
-            existingTheme.setIcon(imageUrl+'/'+uniqueFileName);
+            dataSetTheme.setIconData(icon.getBytes());
+            dataSetTheme.setIconPath(UPLOAD_DIR+'/'+uniqueFileName);
+            dataSetTheme.setIcon(imageUrl+'/'+uniqueFileName);
         }
-        return dataSetThemeRepository.save(existingTheme);
+        dataSetTheme= dataSetThemeRepository.save(dataSetTheme);
+        return dataSetThemeMapper.convertToResponse(dataSetTheme);
     }
+
     @Override
     public Boolean deleteThemeById(UUID uuid) {
-        DataSetTheme theme= getThemeById(uuid);
-        if (theme != null) {
-            theme.setDeleted(true);
-            dataSetThemeRepository.save(theme);
+        DataSetTheme dataSetTheme= dataSetThemeRepository.findByUuidAndDeletedFalse(uuid);
+        if (dataSetTheme == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No theme found with id: "+uuid);
+        }
+        else  {
+            dataSetTheme.setDeleted(true);
+            dataSetThemeRepository.save(dataSetTheme);
             return true;
         }
-        return false;
     }
+
     @Override
     public Long getNumberOfTheme() {
         return dataSetThemeRepository.countByDeletedFalse();
     }
+
     @Override
     public byte[] getImage(String fileName) throws IOException {
         Path filePath = Paths.get(UPLOAD_DIR+'/'+ fileName);
@@ -101,17 +125,20 @@ public class DataSetThemeServiceImplementation implements DataSetThemeService {
             throw new IllegalArgumentException("Erreur(s): " + String.join(", ", errors) + ".");
         }
     }
+
     private void checkIfThemeNameExists(String name) {
         if (dataSetThemeRepository.findByNameAndDeletedFalse(name) != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un thème avec ce nom existe déjà.");
         }
     }
+
     private void ensureUploadDirectoryExists() throws IOException {
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
     }
+
     private DataSetTheme createThemeObject(String name, String description, MultipartFile file) throws IOException {
         DataSetTheme theme = new DataSetTheme();
         theme.setUuid(UUID.randomUUID());
@@ -124,6 +151,7 @@ public class DataSetThemeServiceImplementation implements DataSetThemeService {
         theme.setIconPath(UPLOAD_DIR + uniqueFileName);
         return theme;
     }
+
     private String saveFileToDisk(MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
         if (originalFileName == null || originalFileName.trim().isEmpty()) {
@@ -151,6 +179,7 @@ public class DataSetThemeServiceImplementation implements DataSetThemeService {
 
         return filePath.getFileName().toString();
     }
+
 }
 
 

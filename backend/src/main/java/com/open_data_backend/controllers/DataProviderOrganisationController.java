@@ -1,6 +1,6 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataProviderOrganisation;
+import com.open_data_backend.dtos.dataProviderOrganisation.DataProviderOrganisationResponse;
 import com.open_data_backend.services.dataProviderOrganisation.DataProviderOrganisationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,36 +16,36 @@ public class DataProviderOrganisationController {
     private final DataProviderOrganisationService dataProviderOrganisationService;
 
     @GetMapping("/get/all")
-    public List<DataProviderOrganisation> getAllProviders() {
+    public List<DataProviderOrganisationResponse> getAllProviders() {
         return dataProviderOrganisationService.getAllDataProviderOrganisations();
     }
 
     @GetMapping("/get/byId/{uuid}")
-    public DataProviderOrganisation getProviderById(@PathVariable UUID uuid) {
+    public DataProviderOrganisationResponse getProviderById(@PathVariable UUID uuid) {
         return dataProviderOrganisationService.getDataProviderOrganisationById(uuid);
     }
 
     @GetMapping("/get/byName/{name}")
-    public DataProviderOrganisation getProviderByName(@PathVariable String name) {
+    public DataProviderOrganisationResponse getProviderByName(@PathVariable String name) {
         return dataProviderOrganisationService.getDataProviderOrganisationByName(name);
     }
 
     @PutMapping(value = "/update/byId/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<DataProviderOrganisation> updateProviderById(
+    public ResponseEntity<DataProviderOrganisationResponse> updateProviderById(
             @PathVariable UUID id,
             @RequestParam(value = "name",required = false) String name,
             @RequestParam(value = "description",required = false) String description,
             @RequestParam(value = "icon",required = false) MultipartFile icon) throws IOException {
-        DataProviderOrganisation updatedProvider= dataProviderOrganisationService.updateDataProviderOrganisationById(id, name, description, icon);
+        DataProviderOrganisationResponse updatedProvider= dataProviderOrganisationService.updateDataProviderOrganisationById(id, name, description, icon);
         return ResponseEntity.ok(updatedProvider);
     }
 
     @PostMapping("/save")
-    public ResponseEntity<DataProviderOrganisation> saveProvider(
+    public ResponseEntity<DataProviderOrganisationResponse> saveProvider(
             @RequestParam(value = "name") String name,
             @RequestParam("description") String description,
             @RequestParam(value = "icon") MultipartFile file) throws IOException {
-        DataProviderOrganisation savedProvider = dataProviderOrganisationService.saveDataProviderOrganisation(name,description,file);
+        DataProviderOrganisationResponse savedProvider = dataProviderOrganisationService.saveDataProviderOrganisation(name,description,file);
         return ResponseEntity.ok(savedProvider);
     }
 

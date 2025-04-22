@@ -15,7 +15,7 @@ public class DataSetTheme {
     private Long id;
     @Column(nullable = false, unique = true)
     private UUID uuid;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
     private String description;
     private String createdBy;
@@ -33,6 +33,6 @@ public class DataSetTheme {
     private byte[] iconData;
     private String iconPath;
     private String icon;
-    @OneToMany(mappedBy = "theme", cascade = CascadeType.ALL, orphanRemoval = true) @JsonIgnore
+    @OneToMany(mappedBy = "theme", cascade = CascadeType.ALL, orphanRemoval = true) //@JsonIgnore
     private List<DataSet> datasets = new ArrayList<>();
 }

@@ -1,6 +1,6 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataConsumer;
+import com.open_data_backend.dtos.dataConsumer.DataConsumerResponse;
 import com.open_data_backend.services.dataConsumer.DataConsumerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,22 +14,22 @@ public class DataConsumerController {
     private final DataConsumerService dataConsumerService;
 
     @GetMapping("/get/all")
-    public List<DataConsumer> getAllDataConsumers() {
+    public List<DataConsumerResponse> getAllDataConsumers() {
         return dataConsumerService.getAllDataConsumers();
     }
 
     @GetMapping("/get/byId/{uuid}")
-    public DataConsumer getDataConsumerById(@PathVariable UUID uuid) {
+    public DataConsumerResponse getDataConsumerById(@PathVariable UUID uuid) {
         return dataConsumerService.getDataConsumerById(uuid);
     }
 
     @GetMapping("/get/byName/{name}")
-    public DataConsumer getDataConsumerByName(@PathVariable String name) {
+    public DataConsumerResponse getDataConsumerByName(@PathVariable String name) {
         return dataConsumerService.getDataConsumerByName(name);
     }
 
     @GetMapping("/get/byEmail/{email}")
-    public DataConsumer getDataConsumerByEmail(@PathVariable String email) {
+    public DataConsumerResponse getDataConsumerByEmail(@PathVariable String email) {
         return dataConsumerService.getDataConsumerByEmail(email);
     }
 
@@ -39,20 +39,20 @@ public class DataConsumerController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<DataConsumer> saveDataConsumer(
+    public ResponseEntity<DataConsumerResponse> saveDataConsumer(
             @RequestParam("name") String name,
             @RequestParam("email") String email) throws IOException {
-        DataConsumer dataConsumer = dataConsumerService.addDataConsumer(name,email);
-        return ResponseEntity.ok(dataConsumer);
+        DataConsumerResponse dataConsumerResponse = dataConsumerService.addDataConsumer(name,email);
+        return ResponseEntity.ok(dataConsumerResponse);
     }
 
     @PutMapping(value = "/update/byId/{id}")
-    public ResponseEntity<DataConsumer> updateDataConsumerById(
+    public ResponseEntity<DataConsumerResponse> updateDataConsumerById(
             @PathVariable UUID id,
             @RequestParam(value = "name",required = false) String name,
             @RequestParam(value = "email",required = false) String email) throws IOException {
-        DataConsumer updatedDataConsumer= dataConsumerService.updateDataConsumerById(id, name,email);
-        return ResponseEntity.ok(updatedDataConsumer);
+        DataConsumerResponse dataConsumerResponse= dataConsumerService.updateDataConsumerById(id, name,email);
+        return ResponseEntity.ok(dataConsumerResponse);
     }
 
 }

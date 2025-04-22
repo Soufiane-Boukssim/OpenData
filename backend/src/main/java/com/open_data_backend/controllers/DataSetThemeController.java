@@ -1,6 +1,6 @@
 package com.open_data_backend.controllers;
 
-import com.open_data_backend.entities.DataSetTheme;
+import com.open_data_backend.dtos.dataSetTheme.DataSetThemeResponse;
 import com.open_data_backend.services.dataSetTheme.DataSetThemeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,26 +16,26 @@ public class DataSetThemeController {
     private final DataSetThemeService dataSetThemeService;
 
     @GetMapping("/get/all")
-    public List<DataSetTheme> getAllThemes() {
+    public List<DataSetThemeResponse> getAllThemes() {
         return dataSetThemeService.getAllThemes();
     }
 
     @GetMapping("/get/byId/{id}")
-    public DataSetTheme getThemeById(@PathVariable UUID id) {
+    public DataSetThemeResponse getThemeById(@PathVariable UUID id) {
         return dataSetThemeService.getThemeById(id);
     }
 
     @GetMapping("/get/byName/{name}")
-    public DataSetTheme getThemeByName(@PathVariable String name) {
+    public DataSetThemeResponse getThemeByName(@PathVariable String name) {
         return dataSetThemeService.getThemeByName(name);
     }
 
     @PostMapping("/save")
-    public ResponseEntity<DataSetTheme> saveTheme(
+    public ResponseEntity<DataSetThemeResponse> saveTheme(
             @RequestParam(value = "name") String name, //by default required = true
             @RequestParam("description") String description,
             @RequestParam(value = "icon", required = true) MultipartFile file) throws IOException {
-        DataSetTheme savedTheme = dataSetThemeService.saveTheme(name,description,file);
+        DataSetThemeResponse savedTheme = dataSetThemeService.saveTheme(name,description,file);
         return ResponseEntity.ok(savedTheme);
     }
 
@@ -48,13 +48,13 @@ public class DataSetThemeController {
     }
 
     @PutMapping(value = "/update/byId/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<DataSetTheme> updateTheme(
+    public ResponseEntity<DataSetThemeResponse> updateTheme(
             @PathVariable UUID id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "icon", required = false) MultipartFile icon) throws IOException {
-        DataSetTheme updatedTheme = dataSetThemeService.updateThemeById(id, name, description, icon);
-        return ResponseEntity.ok(updatedTheme);
+        DataSetThemeResponse updatedThemeResponse = dataSetThemeService.updateThemeById(id, name, description, icon);
+        return ResponseEntity.ok(updatedThemeResponse);
     }
 
     @DeleteMapping("/delete/byId/{id}")
