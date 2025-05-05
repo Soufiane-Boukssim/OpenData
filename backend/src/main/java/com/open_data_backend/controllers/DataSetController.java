@@ -43,13 +43,13 @@ public class DataSetController {
 
 
     @PostMapping("/save")
-    public ResponseEntity<DataSetResponse> saveDataSet( //tous les champs sont required = false mais dans service je lai retourner obligatoire
+    public ResponseEntity<DataSetResponse> saveDataSet(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
             @RequestParam(required = false) UUID themeUuid,
-            @RequestParam(required = false) UUID dataProviderOrganisationUuid,
+            @RequestParam(required = false) UUID dataProviderOrganisationMemberUuid,
             @RequestParam(required = false) MultipartFile file) throws IOException{
-        DataSetResponse dataSetResponse = dataSetService.saveDataSet(name, description, themeUuid, dataProviderOrganisationUuid, file);
+        DataSetResponse dataSetResponse = dataSetService.saveDataSet(name, description, themeUuid, dataProviderOrganisationMemberUuid, file);
         return ResponseEntity.ok(dataSetResponse);
     }
 
@@ -59,9 +59,9 @@ public class DataSetController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "themeUuid", required = false) UUID themeUuid,
-            @RequestParam(value = "dataProviderOrganisationUuid", required = false) UUID dataProviderOrganisationUuid,
+            @RequestParam(value = "dataProviderOrganisationMemberUuid", required = false) UUID dataProviderOrganisationMemberUuid,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        DataSetResponse updatedDataSet = dataSetService.updateDataSetById(id, name, description, themeUuid, dataProviderOrganisationUuid, file);
+        DataSetResponse updatedDataSet = dataSetService.updateDataSetById(id, name, description, themeUuid, dataProviderOrganisationMemberUuid, file);
         return ResponseEntity.ok(updatedDataSet);
     }
 

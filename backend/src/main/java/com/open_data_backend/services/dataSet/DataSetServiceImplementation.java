@@ -1,10 +1,12 @@
 package com.open_data_backend.services.dataSet;
 
 import com.open_data_backend.dtos.dataSet.DataSetResponse;
+import com.open_data_backend.entities.DataProviderOrganisationMember;
 import com.open_data_backend.entities.DataSet;
 import com.open_data_backend.entities.DataSetTheme;
 import com.open_data_backend.entities.DataProviderOrganisation;
 import com.open_data_backend.mappers.DataSetMapper;
+import com.open_data_backend.repositories.DataProviderOrganisationMemberRepository;
 import com.open_data_backend.repositories.DataProviderOrganisationRepository;
 import com.open_data_backend.repositories.DataSetRepository;
 import com.open_data_backend.repositories.DataSetThemeRepository;
@@ -29,6 +31,7 @@ public class DataSetServiceImplementation implements DataSetService {
 
     private final DataSetRepository dataSetRepository;
     private final DataProviderOrganisationRepository dataProviderOrganisationRepository;
+    private final DataProviderOrganisationMemberRepository dataProviderOrganisationMemberRepository;
     private final DataSetThemeRepository dataSetThemeRepository;
 
     private final DataSetMapper dataSetMapper;
@@ -94,10 +97,10 @@ public class DataSetServiceImplementation implements DataSetService {
     }
 
     @Override
-    public DataSetResponse saveDataSet(String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException {
-        validateDataSetInput(name, description, themeUuid, dataProviderOrganisationUuid, file);
+    public DataSetResponse saveDataSet(String name, String description, UUID themeUuid, UUID dataProviderOrganisationMemberUuid, MultipartFile file) throws IOException {
+        validateDataSetInput(name, description, themeUuid, dataProviderOrganisationMemberUuid, file);
         DataSetTheme theme = checkIfThemeExists(themeUuid);
-        DataProviderOrganisation provider = checkIfProviderExists(dataProviderOrganisationUuid);
+        DataProviderOrganisationMember provider = checkIfDataProviderOrganisationMemberExists(dataProviderOrganisationMemberUuid);
         checkUniqueDataSetName(name);
         ensureUploadDirectoryExists();
         DataSet dataSet = createDataSet(name, description, theme, provider, file);
@@ -106,11 +109,22 @@ public class DataSetServiceImplementation implements DataSetService {
     }
 
     @Override
-    public DataSetResponse updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException {
+    public DataSetResponse updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID dataProviderOrganisationMemberUuid, MultipartFile file) throws IOException {
+
+        if (dataProviderOrganisationMemberUuid == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le champ 'dataProviderOrganisationMemberUuid' est vide.");
+        }
+
         DataSet existingDataSet= dataSetRepository.findByUuidAndDeletedFalse(uuid);
         if (existingDataSet == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataSet Not Found with uuid " + uuid);
         }
+
+        DataProviderOrganisationMember member = dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(dataProviderOrganisationMemberUuid);
+        if (member == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "DataProviderOrganisationMember Not Found with uuid " + dataProviderOrganisationMemberUuid);
+        }
+
         if (name != null) {
             existingDataSet.setName(name);
         }
@@ -120,9 +134,9 @@ public class DataSetServiceImplementation implements DataSetService {
         if (themeUuid != null) {
             existingDataSet.setTheme(dataSetThemeRepository.findByUuidAndDeletedFalse(themeUuid));
         }
-        if (description != null) {
-            existingDataSet.setDataProviderOrganisation(dataProviderOrganisationRepository.findByUuidAndDeletedFalse(dataProviderOrganisationUuid));
-        }
+        existingDataSet.setDataProviderOrganisationMember(dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(dataProviderOrganisationMemberUuid));
+        existingDataSet.setDataProviderOrganisation(dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(dataProviderOrganisationMemberUuid).getDataProviderOrganisation());
+
         if (file != null && !file.isEmpty()) {
             String uniqueFileName = saveFileToDisk(file);
             existingDataSet.setFileData(file.getBytes());
@@ -131,6 +145,7 @@ public class DataSetServiceImplementation implements DataSetService {
             existingDataSet.setFileType(file.getContentType());
             existingDataSet.setFileSize(file.getSize());
         }
+        existingDataSet.setUpdatedBy(member.getEmail());
         existingDataSet= dataSetRepository.save(existingDataSet);
         return dataSetMapper.convertToResponse(existingDataSet);
     }
@@ -160,12 +175,12 @@ public class DataSetServiceImplementation implements DataSetService {
         return Files.readAllBytes(filePath);
     }
 
-    private void validateDataSetInput(String name, String description, UUID themeUuid, UUID providerUuid, MultipartFile file) {
+    private void validateDataSetInput(String name, String description, UUID themeUuid, UUID dataProviderOrganisationMemberUuid, MultipartFile file) {
         List<String> errors = new ArrayList<>();
         if (name == null || name.trim().isEmpty()) errors.add("Le champ 'name' est vide");
         if (description == null || description.trim().isEmpty()) errors.add("Le champ 'description' est vide");
         if (themeUuid == null) errors.add("Le champ 'theme' est vide");
-        if (providerUuid == null) errors.add("Le champ 'provider' est vide");
+        if (dataProviderOrganisationMemberUuid == null) errors.add("Le champ 'dataProviderOrganisationMemberUuid' est vide");
         if (file == null || file.isEmpty()) errors.add("Le champ 'file' est vide");
         if (!errors.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erreur(s): " + String.join(", ", errors) + ".");
@@ -180,8 +195,8 @@ public class DataSetServiceImplementation implements DataSetService {
         return theme;
     }
 
-    private DataProviderOrganisation checkIfProviderExists(UUID providerUuid) {
-        DataProviderOrganisation provider = dataProviderOrganisationRepository.findByUuidAndDeletedFalse(providerUuid);
+    private DataProviderOrganisationMember checkIfDataProviderOrganisationMemberExists(UUID dataProviderOrganisationMemberUuid) {
+        DataProviderOrganisationMember provider = dataProviderOrganisationMemberRepository.findByUuidAndDeletedFalse(dataProviderOrganisationMemberUuid);
         if (provider == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le provider spécifié n'existe pas ou a été supprimé.");
         }
@@ -201,13 +216,15 @@ public class DataSetServiceImplementation implements DataSetService {
         }
     }
 
-    private DataSet createDataSet(String name, String description, DataSetTheme theme, DataProviderOrganisation provider, MultipartFile file) throws IOException {
+    private DataSet createDataSet(String name, String description, DataSetTheme theme, DataProviderOrganisationMember provider, MultipartFile file) throws IOException {
         DataSet dataSet = new DataSet();
         dataSet.setUuid(UUID.randomUUID());
         dataSet.setName(name);
         dataSet.setDescription(description);
         dataSet.setTheme(theme);
-        dataSet.setDataProviderOrganisation(provider);
+        dataSet.setDataProviderOrganisationMember(provider);
+        dataSet.setDataProviderOrganisation(provider.getDataProviderOrganisation());
+        dataSet.setCreatedBy(provider.getEmail());
         if (file != null && !file.isEmpty()) {
             String uniqueFileName = saveFileToDisk(file);
             dataSet.setFileData(file.getBytes());

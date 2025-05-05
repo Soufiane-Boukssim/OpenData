@@ -14,8 +14,8 @@ public interface DataSetService {
 
     DataSetResponse getDataSetByName(String name);
 
-    DataSetResponse saveDataSet(String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException;
-    DataSetResponse updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID dataProviderOrganisationUuid, MultipartFile file) throws IOException;
+    DataSetResponse saveDataSet(String name, String description, UUID themeUuid, UUID dataProviderOrganisationMemberUuid, MultipartFile file) throws IOException;
+    DataSetResponse updateDataSetById(UUID uuid, String name, String description, UUID themeUuid, UUID dataProviderOrganisationMemberUuid, MultipartFile file) throws IOException;
 
 
     Boolean deleteDataSetById(UUID uuid);
