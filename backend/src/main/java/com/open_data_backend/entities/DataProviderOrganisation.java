@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class DataProviderOrganisation {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) //@JsonIgnore
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
     private UUID uuid;
@@ -27,7 +27,7 @@ public class DataProviderOrganisation {
     }
     @Column(nullable = false)
     private boolean deleted = false;
-    @OneToMany(mappedBy = "dataProviderOrganisation") //@JsonIgnore
+    @OneToMany(mappedBy = "dataProviderOrganisation")
     private List<DataProviderOrganisationMember> dataProviderOrganisationMembers = new ArrayList<>();
     @OneToMany(mappedBy = "dataProviderOrganisation")
     private List<DataSet> dataSets;

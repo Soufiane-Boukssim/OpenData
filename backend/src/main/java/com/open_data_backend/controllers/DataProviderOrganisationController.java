@@ -1,6 +1,7 @@
 package com.open_data_backend.controllers;
 
 import com.open_data_backend.dtos.dataProviderOrganisation.DataProviderOrganisationResponse;
+import com.open_data_backend.dtos.dataProviderOrganisationMember.DataProviderOrganisationMemberResponse;
 import com.open_data_backend.services.dataProviderOrganisation.DataProviderOrganisationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,6 +20,12 @@ public class DataProviderOrganisationController {
     public List<DataProviderOrganisationResponse> getAllProviders() {
         return dataProviderOrganisationService.getAllDataProviderOrganisations();
     }
+
+    @GetMapping("/{organisationId}/members")
+    public List<DataProviderOrganisationMemberResponse> getAllMembersOfOrganisation(@PathVariable UUID organisationId) {
+        return dataProviderOrganisationService.getAllMembersOfOrganisation(organisationId);
+    }
+
 
     @GetMapping("/get/byId/{uuid}")
     public DataProviderOrganisationResponse getProviderById(@PathVariable UUID uuid) {

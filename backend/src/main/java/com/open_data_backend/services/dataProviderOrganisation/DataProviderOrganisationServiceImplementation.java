@@ -1,9 +1,11 @@
 package com.open_data_backend.services.dataProviderOrganisation;
 
 import com.open_data_backend.dtos.dataProviderOrganisation.DataProviderOrganisationResponse;
+import com.open_data_backend.dtos.dataProviderOrganisationMember.DataProviderOrganisationMemberResponse;
 import com.open_data_backend.entities.DataProviderOrganisation;
 import com.open_data_backend.entities.DataProviderOrganisationMember;
 import com.open_data_backend.mappers.DataProviderOrganisationMapper;
+import com.open_data_backend.mappers.DataProviderOrganisationMemberMapper;
 import com.open_data_backend.repositories.DataProviderOrganisationMemberRepository;
 import com.open_data_backend.repositories.DataProviderOrganisationRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class DataProviderOrganisationServiceImplementation implements DataProvid
     private final DataProviderOrganisationMemberRepository dataProviderOrganisationMemberRepository;
 
     private final DataProviderOrganisationMapper dataProviderOrganisationMapper;
+    private final DataProviderOrganisationMemberMapper dataProviderOrganisationMemberMapper;
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir").replace("\\", "/") + "/uploads/images/data-provider/organisations";
     private static final String imageUrl = "http://localhost:8080/api/data-provider/organisations/upload/image";
@@ -153,6 +156,29 @@ public class DataProviderOrganisationServiceImplementation implements DataProvid
        dataProviderOrganisationMember.setDataProviderOrganisation(dataProviderOrganisation);
 
         dataProviderOrganisationMemberRepository.save(dataProviderOrganisationMember);
+    }
+
+    @Override
+    public List<DataProviderOrganisationMemberResponse> getAllMembersOfOrganisation(UUID organisationId) {
+
+        List<DataProviderOrganisationMemberResponse> dataProviderOrganisationMembersResponse = new ArrayList<>();
+
+
+        DataProviderOrganisation dataProviderOrganisation = dataProviderOrganisationRepository.findByUuidAndDeletedFalse(organisationId);
+        if (dataProviderOrganisation == null) {
+            throw new RuntimeException("Organisation not found with id: "+organisationId);
+        }
+
+        List<DataProviderOrganisationMember> dataProviderOrganisationMemberList= dataProviderOrganisationMemberRepository.findByDataProviderOrganisation_UuidAndDeletedFalse(organisationId);
+        if (dataProviderOrganisationMemberList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The data provider organisation members table of this organisation is empty");
+        }
+
+        for (DataProviderOrganisationMember member : dataProviderOrganisationMemberList) {
+            dataProviderOrganisationMembersResponse.add(dataProviderOrganisationMemberMapper.convertToResponse(member));
+        }
+        return dataProviderOrganisationMembersResponse;
+
     }
 
 

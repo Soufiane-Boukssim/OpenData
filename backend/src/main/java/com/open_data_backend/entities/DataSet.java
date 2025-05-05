@@ -36,9 +36,7 @@ public class DataSet {
     private Long fileSize;
     @ManyToOne @JoinColumn(name = "theme_id") @JsonIgnoreProperties({"id", "name", "description", "createdBy", "updatedBy", "createdOn", "updatedOn", "deleted", "iconPath", "datasets","base64Icon", "icon"})
     private DataSetTheme theme;
-//    @ManyToOne @JoinColumn(name = "provider_id") @JsonIgnoreProperties({"id", "name", "description", "createdBy", "updatedBy", "createdOn", "updatedOn", "deleted", "dataSetList", "iconPath","base64Icon", "icon"})
-//    private DataProviderOrganisation provider;
-///////////////////////
+
     // Organisation propriétaire
     @ManyToOne @JoinColumn(name = "data_provider_organisation_id")
     private DataProviderOrganisation dataProviderOrganisation;

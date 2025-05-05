@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class DataProviderOrganisationMember {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) //@JsonIgnore
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
     private UUID uuid;
@@ -28,10 +28,10 @@ public class DataProviderOrganisationMember {
     @Column(nullable = false)
     private boolean deleted = false;
 
-    @ManyToOne @JoinColumn(name = "data_provider_organisation_id") //@JsonIgnoreProperties({"description","createdBy","updatedBy", "createdOn","updatedOn", "deleted","dataSets", "iconData","iconPath", "icon"})
+    @ManyToOne @JoinColumn(name = "data_provider_organisation_id")
     private DataProviderOrganisation dataProviderOrganisation;
 
-    @OneToMany(mappedBy = "createdBy") //@JsonIgnore
+    @OneToMany(mappedBy = "createdBy")
     private List<DataSet> dataSetsCreated;
 
 }

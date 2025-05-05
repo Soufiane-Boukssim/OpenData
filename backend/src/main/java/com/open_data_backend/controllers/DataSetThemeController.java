@@ -34,7 +34,7 @@ public class DataSetThemeController {
     public ResponseEntity<DataSetThemeResponse> saveTheme(
             @RequestParam(value = "name") String name, //by default required = true
             @RequestParam("description") String description,
-            @RequestParam(value = "icon", required = true) MultipartFile file) throws IOException {
+            @RequestParam(value = "icon") MultipartFile file) throws IOException {
         DataSetThemeResponse savedTheme = dataSetThemeService.saveTheme(name,description,file);
         return ResponseEntity.ok(savedTheme);
     }

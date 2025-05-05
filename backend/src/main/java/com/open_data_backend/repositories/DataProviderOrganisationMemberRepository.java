@@ -12,4 +12,6 @@ public interface DataProviderOrganisationMemberRepository extends JpaRepository<
     DataProviderOrganisationMember findByUuidAndDeletedFalse(UUID uuid);
     DataProviderOrganisationMember findByFirstNameAndLastNameAndDeletedFalse(String firstName, String lastName);
     DataProviderOrganisationMember findByEmailAndDeletedFalse(String email);
+
+    List<DataProviderOrganisationMember> findByDataProviderOrganisation_UuidAndDeletedFalse(UUID organisationUuid);
 }

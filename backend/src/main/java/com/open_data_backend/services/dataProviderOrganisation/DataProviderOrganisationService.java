@@ -1,6 +1,7 @@
 package com.open_data_backend.services.dataProviderOrganisation;
 
 import com.open_data_backend.dtos.dataProviderOrganisation.DataProviderOrganisationResponse;
+import com.open_data_backend.dtos.dataProviderOrganisationMember.DataProviderOrganisationMemberResponse;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
@@ -16,5 +17,7 @@ public interface DataProviderOrganisationService {
     Long getNumberOfDataProviderOrganisations();
     byte[] getDataProviderOrganisationImage(String fileName) throws IOException;
     void assignUserToOrganisation(UUID organisationId, UUID userId);
+
+    List<DataProviderOrganisationMemberResponse> getAllMembersOfOrganisation(UUID organisationUuid);
 
 }
